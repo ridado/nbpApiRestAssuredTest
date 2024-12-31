@@ -1,6 +1,9 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Default Maven'}
+
     stages {
         stage('Checkout') {
             steps {
@@ -18,7 +21,7 @@ pipeline {
         stage('Test') {
             steps {
                 // Uruchamianie testów Maven
-                sh 'mvn test'
+                sh 'mvn -X test'
             }
         }
 

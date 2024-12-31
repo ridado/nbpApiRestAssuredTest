@@ -1,39 +1,44 @@
 pipeline {
     agent any
-    options {
-        disableConcurrentBuilds()
-    }
+
     stages {
-        }
-        stage('Clean') {
+        stage('Checkout') {
             steps {
-                sh "mvn clean"
+                git branch: 'main', url: 'https://github.com/ridado/nbpApiRestAssuredTest.git'
             }
         }
-        stage('Checkout') {
-                    steps {
-                        // Klonowanie repozytorium
-                        git branch: 'main', url: 'https://github.com/ridado/nbpApiRestAssuredTest.git'
-                    }
+
+        stage('Build') {
+            steps {
+                // Budowanie projektu Maven
+                sh 'mvn clean'
+            }
+        }
+
         stage('Test') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh "mvn test"
-                }
+                // Uruchamianie testów Maven
+                sh 'mvn test'
             }
         }
-        stage('Report') {
+
+        stage('Post Results') {
             steps {
-                script {
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [[path: 'target/allure-results']]
-                    ])
-                }
+                // Publikacja wyników testów w konsoli
+                junit 'target/surefire-reports/*.xml' // Zmodyfikuj ścieżkę, jeśli używasz innego raportowania
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline zakończony.'
+        }
+        success {
+            echo 'Pipeline zakończył się sukcesem.'
+        }
+        failure {
+            echo 'Pipeline zakończył się niepowodzeniem. Sprawdź logi.'
         }
     }
 }
